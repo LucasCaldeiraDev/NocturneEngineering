@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lucascaldeiradev.github.io/portifolio4/sitemap.xml
