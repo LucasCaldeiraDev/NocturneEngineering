@@ -5,7 +5,6 @@ import StaticSequence from './components/StaticSequence'
 import OrbitSection from './components/OrbitSection'
 import HeroFinale from './components/HeroFinale'
 import Dossier from './components/Dossier'
-import BuildFilm from './components/BuildFilm'
 import SpecsStrip from './components/SpecsStrip'
 import Footer from './components/Footer'
 import { usePrefersReducedMotion } from './lib/usePrefersReducedMotion'
@@ -28,7 +27,6 @@ export default function App() {
         <OrbitSection reduced={reduced} />
         <HeroFinale reduced={reduced} />
         <Dossier reduced={reduced} />
-        <BuildFilm reduced={reduced} />
         <SpecsStrip reduced={reduced} />
         <Footer />
       </main>

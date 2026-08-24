@@ -269,9 +269,3 @@ export const SPEC_SHEET: Array<{ group: string; rows: Array<[string, string]> }>
     ],
   },
 ]
-
-export const FILM = {
-  src: a('assets/build-film.mp4'),
-  poster: a('assets/stage-01-chassis.webp'),
-  duration: '0:37',
-}

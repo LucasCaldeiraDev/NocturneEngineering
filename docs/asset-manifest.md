@@ -92,8 +92,11 @@ automático para os wipes:
 |---|---|---|---|
 | `finish-graphite` (Graphite Storm) | edit do master S6, só a cor da pintura | `d58696d9-5a42-41e3-95f6-a514d997e6b7` | 2 cr |
 | `finish-oxblood` (Oxblood) | edit do master S6, só a cor da pintura | `708468e7-a434-426d-bc57-3b85515c377c` | 2 cr |
-| `build-film.mp4` (0:37, 9,7 MB) | concat ffmpeg das 5 transições + órbita | — | 0 cr |
 | `dossier-*.webp` (6 close-ups 4:5) | crops sharp dos masters aprovados | — | 0 cr |
+
+`build-film.mp4` foi gerado nesta fase e depois removido — a LP é usada em apresentação e
+a seção do filme não fazia sentido no fluxo. `scripts/optimize-assets.mjs` concat via ffmpeg
+continua disponível em `assets-src/` caso o filme volte a ser útil (ex.: post de rede social).
 
 **Total fase 3: 4 créditos. Total geral do projeto: ~166 créditos.**
 

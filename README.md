@@ -26,7 +26,7 @@ npm run assets:optimize  # regenera public/assets a partir de assets-src/
 
 Montagem dirigida por scroll (6 estágios com vídeos de fábrica scrubados) → órbita 360° →
 finale com configurador de pintura (3 acabamentos) → dossiê de engenharia (6 close-ups) →
-build film (0:37) → ficha técnica completa → rodapé.
+ficha técnica completa → rodapé.
 
 ## Estrutura
 

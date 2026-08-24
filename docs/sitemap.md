@@ -14,7 +14,6 @@
 ├── <OrbitSection>         PIN ~250vh — vídeo 360° scrubbed
 ├── <HeroFinale>           hero shot + tagline + configurador de pintura (3 finishes) + CTAs
 ├── <Dossier>              6 close-ups de engenharia + dados (id="dossier")
-├── <BuildFilm>            filme de 0:37 com todos os estágios (id="film")
 ├── <SpecsStrip>           4 stats hero + ficha técnica completa em 4 grupos (id="spec")
 └── <Footer>               disclaimer de ficção + crédito + contato (id="contact")
 ```
