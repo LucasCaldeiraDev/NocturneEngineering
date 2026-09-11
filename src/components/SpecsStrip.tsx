@@ -22,8 +22,8 @@ export default function SpecsStrip({ reduced }: { reduced: boolean }) {
     >
       <div className="divide-line mx-auto grid max-w-6xl grid-cols-2 md:grid-cols-4 md:divide-x">
         {HEADLINE_STATS.map(([value, label]) => (
-          <div key={label} data-reveal className="px-8 py-10 md:py-14">
-            <p className="display text-3xl md:text-4xl">{value}</p>
+          <div key={label} data-reveal className="px-4 py-10 sm:px-8 md:py-14">
+            <p className="display text-2xl sm:text-3xl md:text-4xl">{value}</p>
             <p className="hud-label text-muted mt-2">{label}</p>
           </div>
         ))}

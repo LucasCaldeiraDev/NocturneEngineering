@@ -22,6 +22,33 @@ const T = [
 const MIDS = T.map((w) => w.at + w.dur / 2)
 /** Progress at which each transition video starts loading (one window ahead). */
 const LOAD_AT = [0.01, T[0].at, T[1].at, T[2].at, T[3].at]
+/**
+ * Caps how far a video's playhead can jump in a single frame — the last
+ * line of defense against a visible pop, independent of what drove the jump.
+ */
+const MAX_TIME_STEP = 0.35
+
+/**
+ * GSAP's `scrub: N` eases the timeline toward the scroll-derived progress
+ * over a FIXED duration of N seconds, regardless of how far it has to
+ * travel. That means a huge jump (scrollbar drag, End key, or a hard flick
+ * outrunning the touch governor) covers its distance in the SAME time as a
+ * tiny one — i.e. proportionally much *faster* — which can sweep straight
+ * through several transition windows before their videos have had any
+ * chance to load, skipping stages entirely instead of just falling back to
+ * the wipe. So the timeline here is driven manually: every tick, this
+ * "governed" progress value takes a step toward the real scroll progress
+ * that is smoothed for normal scrolling (LERP) but hard-capped in size
+ * (MAX_STEP) — a true velocity ceiling, not a duration. That guarantees a
+ * minimum dwell time in front of and inside every window, no matter how
+ * fast or how the scroll position changed. Both constants are expressed
+ * per 60fps frame and scaled by `gsap.ticker.deltaRatio(60)` every tick, so
+ * a dropped frame (slow device, throttled tab, background tab) can't quietly
+ * raise the effective ceiling — it stays a real-time velocity cap, not a
+ * per-callback one.
+ */
+const GOVERNOR_LERP = 0.11
+const GOVERNOR_MAX_STEP = 0.0075
 
 const CLIP_FROM: Record<string, string> = {
   up: 'inset(100% 0% 0% 0%)',
@@ -73,24 +100,20 @@ export default function AssemblySequence() {
       gsap.set(introRef.current, { autoAlpha: 1 })
       gsap.set(videos, { autoAlpha: 0 })
 
-      const tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: mobile ? '+=500%' : '+=700%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-          onUpdate(self) {
-            const p = self.progress
-            let active = 0
-            for (const m of MIDS) if (p >= m) active++
-            if (counterRef.current) {
-              counterRef.current.textContent = `${STAGES[active].num} / 06`
-            }
-            tickRefs.current.forEach((t, i) => t?.setAttribute('data-active', String(i <= active)))
-          },
+      // Paused, ungoverned by ScrollTrigger's own scrub — see GOVERNOR_* docs
+      // above. A plain ScrollTrigger below only pins the section and reports
+      // raw progress; the tick loop drives tl.progress() itself.
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } })
+
+      let rawProgress = 0
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: mobile ? '+=500%' : '+=700%',
+        pin: true,
+        anticipatePin: 1,
+        onUpdate(self) {
+          rawProgress = self.progress
         },
       })
 
@@ -189,14 +212,42 @@ export default function AssemblySequence() {
         }
       }
 
+      let displayProgress = 0
+
       const tick = () => {
-        const st = tl.scrollTrigger
-        if (!st) return
         if (!st.isActive) {
+          // Off-screen (scrolled fully past, or not reached yet): snap
+          // instead of governing — there's nothing to protect the user
+          // from seeing, and the section must be in its correct end state
+          // if they scroll back into it.
+          displayProgress = rawProgress
+          tl.progress(displayProgress)
           T.forEach((_, i) => hide(i))
           return
         }
-        const sp = tl.totalProgress()
+
+        // Governor: smooth for normal scrolling, hard-capped for extreme jumps.
+        // Scaled by real elapsed time (deltaRatio) so a dropped frame can't
+        // sneak a bigger jump through, and a stalled tick can't stall progress.
+        const delta = rawProgress - displayProgress
+        if (Math.abs(delta) > 0.0004) {
+          const dr = gsap.ticker.deltaRatio(60)
+          const step = delta * GOVERNOR_LERP * dr
+          const maxStep = GOVERNOR_MAX_STEP * dr
+          displayProgress += Math.sign(step) * Math.min(Math.abs(step), maxStep)
+        } else {
+          displayProgress = rawProgress
+        }
+        tl.progress(displayProgress)
+
+        const sp = displayProgress
+        let active = 0
+        for (const m of MIDS) if (sp >= m) active++
+        if (counterRef.current) {
+          counterRef.current.textContent = `${STAGES[active].num} / 06`
+        }
+        tickRefs.current.forEach((t, i) => t?.setAttribute('data-active', String(i <= active)))
+
         T.forEach((w, i) => {
           const v = videos[i]
           if (!v) return
@@ -220,28 +271,37 @@ export default function AssemblySequence() {
             gsap.set(v, { autoAlpha: 1 })
           }
           const target = ((sp - w.at) / w.dur) * Math.max(v.duration - 0.05, 0)
-          if (!v.seeking && Math.abs(v.currentTime - target) > 0.02) {
-            v.currentTime = target
+          if (!v.seeking) {
+            const vDelta = target - v.currentTime
+            if (Math.abs(vDelta) > 0.02) {
+              const maxStep = MAX_TIME_STEP * gsap.ticker.deltaRatio(60)
+              v.currentTime += Math.sign(vDelta) * Math.min(Math.abs(vDelta), maxStep)
+            }
           }
         })
       }
       gsap.ticker.add(tick)
 
-      // Warm the first transition during idle time so the opening window
-      // rarely needs its wipe fallback, without blocking first paint.
-      const warmFirst = () => {
-        const v = videos[0]
-        if (v && !v.dataset.srcSet) attach(v, 0)
+      // Warm the first two transitions during idle time, well before the
+      // user starts scrolling, so those opening windows rarely need their
+      // wipe fallback even under a fast flick — without blocking first paint.
+      const warmEarly = () => {
+        ;[0, 1].forEach((i) => {
+          const v = videos[i]
+          if (v && !v.dataset.srcSet) attach(v, i)
+        })
       }
       const hasIdle = typeof window.requestIdleCallback === 'function'
       const idleId = hasIdle
-        ? window.requestIdleCallback(warmFirst, { timeout: 4000 })
-        : window.setTimeout(warmFirst, 2500)
+        ? window.requestIdleCallback(warmEarly, { timeout: 4000 })
+        : window.setTimeout(warmEarly, 2500)
 
       return () => {
         gsap.ticker.remove(tick)
         if (hasIdle) window.cancelIdleCallback(idleId)
         else window.clearTimeout(idleId)
+        st.kill()
+        tl.kill()
       }
     })
 

@@ -5,6 +5,14 @@ import { ORBIT } from '../lib/stages'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const SCRUB_START = 0.03
+const SCRUB_END = 0.97
+/** Same governor as AssemblySequence: caps the playhead's per-frame jump. */
+const MAX_TIME_STEP = 0.35
+/** Same velocity-ceiling governor as AssemblySequence — see its docs. */
+const GOVERNOR_LERP = 0.14
+const GOVERNOR_MAX_STEP = 0.01
+
 /**
  * Scroll-scrubbed 360° walk-around. The video is lazily attached when the
  * section approaches, and its currentTime is driven by scroll progress.
@@ -21,18 +29,26 @@ export default function OrbitSection({ reduced }: { reduced: boolean }) {
     const video = videoRef.current
     if (!section || !video) return
 
+    let tick: (() => void) | null = null
+
     const ctx = gsap.context(() => {
       const mobile = window.matchMedia('(max-width: 767px)').matches
 
-      const tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: mobile ? '+=180%' : '+=250%',
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
+      // Paused, driven manually from the tick loop below (not ScrollTrigger's
+      // own scrub) — see AssemblySequence for why: a fixed-duration scrub
+      // covers a big jump proportionally *faster*, which can skip the video
+      // scrub ahead of what's loaded. A capped-velocity governor can't.
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } })
+
+      let rawProgress = 0
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: mobile ? '+=180%' : '+=250%',
+        pin: true,
+        anticipatePin: 1,
+        onUpdate(self) {
+          rawProgress = self.progress
         },
       })
 
@@ -45,12 +61,37 @@ export default function OrbitSection({ reduced }: { reduced: boolean }) {
       tl.to(captionRef.current, { autoAlpha: 0, duration: 0.08 }, 0.9)
       tl.to({}, { duration: 0.02 }, 0.98) // keep the timeline spanning the full pin
 
-      const attachScrub = () => {
-        if (!video.duration || Number.isNaN(video.duration)) return
-        tl.to(video, { currentTime: Math.max(video.duration - 0.05, 0), duration: 0.94 }, 0.03)
+      let displayProgress = 0
+
+      tick = () => {
+        if (!st.isActive) {
+          // Off-screen: snap instead of governing, so the caption/video are
+          // in the correct end state if the user scrolls back into view.
+          displayProgress = rawProgress
+          tl.progress(displayProgress)
+          return
+        }
+        const delta = rawProgress - displayProgress
+        if (Math.abs(delta) > 0.0004) {
+          const dr = gsap.ticker.deltaRatio(60)
+          const step = delta * GOVERNOR_LERP * dr
+          const maxStep = GOVERNOR_MAX_STEP * dr
+          displayProgress += Math.sign(step) * Math.min(Math.abs(step), maxStep)
+        } else {
+          displayProgress = rawProgress
+        }
+        tl.progress(displayProgress)
+
+        if (!video.duration || Number.isNaN(video.duration) || video.seeking) return
+        const frac = gsap.utils.clamp(0, 1, (displayProgress - SCRUB_START) / (SCRUB_END - SCRUB_START))
+        const target = frac * Math.max(video.duration - 0.05, 0)
+        const vdelta = target - video.currentTime
+        if (Math.abs(vdelta) > 0.02) {
+          const maxStep = MAX_TIME_STEP * gsap.ticker.deltaRatio(60)
+          video.currentTime += Math.sign(vdelta) * Math.min(Math.abs(vdelta), maxStep)
+        }
       }
-      if (video.readyState >= 1) attachScrub()
-      else video.addEventListener('loadedmetadata', attachScrub, { once: true })
+      gsap.ticker.add(tick)
 
       // Attach the real source only when the user gets close.
       ScrollTrigger.create({
@@ -66,7 +107,10 @@ export default function OrbitSection({ reduced }: { reduced: boolean }) {
       })
     }, section)
 
-    return () => ctx.revert()
+    return () => {
+      if (tick) gsap.ticker.remove(tick)
+      ctx.revert()
+    }
   }, [reduced, failed])
 
   if (reduced || failed) {

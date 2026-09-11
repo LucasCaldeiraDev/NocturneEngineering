@@ -8,9 +8,11 @@ import Dossier from './components/Dossier'
 import SpecsStrip from './components/SpecsStrip'
 import Footer from './components/Footer'
 import { usePrefersReducedMotion } from './lib/usePrefersReducedMotion'
+import { useScrollGovernor } from './lib/useScrollGovernor'
 
 export default function App() {
   const reduced = usePrefersReducedMotion()
+  useScrollGovernor(reduced)
 
   return (
     <>

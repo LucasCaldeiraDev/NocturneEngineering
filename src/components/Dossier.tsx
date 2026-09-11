@@ -17,7 +17,7 @@ export default function Dossier({ reduced }: { reduced: boolean }) {
         <p data-reveal className="hud-label text-hud">
           The dossier
         </p>
-        <h2 data-reveal className="display mt-4 max-w-3xl text-4xl md:text-6xl">
+        <h2 data-reveal className="display mt-4 max-w-3xl text-[9vw] leading-[0.95] sm:text-4xl md:text-6xl">
           Engineered in the open.
         </h2>
         <p data-reveal className="text-muted mt-4 max-w-xl text-sm leading-relaxed md:text-base">

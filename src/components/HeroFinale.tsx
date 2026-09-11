@@ -64,7 +64,7 @@ export default function HeroFinale({ reduced }: { reduced: boolean }) {
         <p data-reveal className="hud-label text-hud">
           The result
         </p>
-        <h2 data-reveal className="display mt-4 text-5xl md:text-8xl">
+        <h2 data-reveal className="display mt-4 text-[9vw] leading-[0.95] md:text-8xl">
           Engineered
           <br />
           to be desired.
@@ -75,7 +75,7 @@ export default function HeroFinale({ reduced }: { reduced: boolean }) {
 
         <div data-reveal className="mt-8">
           <p className="hud-label text-muted">Choose your obsession</p>
-          <div className="mt-3 flex items-center gap-3" role="radiogroup" aria-label="Paint finish">
+          <div className="mt-3 flex items-center gap-4" role="radiogroup" aria-label="Paint finish">
             {FINISHES.map((f, i) => (
               <button
                 key={f.id}
@@ -84,11 +84,15 @@ export default function HeroFinale({ reduced }: { reduced: boolean }) {
                 aria-checked={finish === i}
                 onClick={() => setFinish(i)}
                 title={f.name}
-                className={`h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
-                  finish === i ? 'border-ink scale-110' : 'border-line hover:border-muted'
-                }`}
-                style={{ background: f.swatch }}
+                className="flex h-11 w-11 items-center justify-center"
               >
+                <span
+                  aria-hidden
+                  className={`block h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
+                    finish === i ? 'border-ink scale-110' : 'border-line'
+                  }`}
+                  style={{ background: f.swatch }}
+                />
                 <span className="sr-only">{f.name}</span>
               </button>
             ))}

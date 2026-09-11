@@ -8,11 +8,29 @@ Progress 0→1 dividido em 5 janelas de transição + intro + hold.
 
 **Arquitetura em camadas (v2):** dentro de cada janela, um vídeo de montagem gerado
 (start frame = estágio N, end frame = estágio N+1) é scrubado via `currentTime` por um
-`gsap.ticker` que lê `tl.totalProgress()` (progresso suavizado). Os wipes de `clip-path`
-ficam NA CAMADA DE BAIXO como fallback automático: um vídeo só é "armado" para a janela
-se já estava pronto (`readyState ≥ 2`) antes de a janela começar — senão aquele passe
-usa o wipe, sem troca no meio da transição. Carga progressiva: vídeo i recebe `src`
-quando o progresso cruza o início da janela i−1 (V1 carrega no primeiro tick pós-mount).
+`gsap.ticker`. Os wipes de `clip-path` ficam NA CAMADA DE BAIXO como fallback automático:
+um vídeo só é "armado" para a janela se já estava pronto (`readyState ≥ 2`) antes de a
+janela começar — senão aquele passe usa o wipe, sem troca no meio da transição. Carga
+progressiva: vídeo i recebe `src` quando o progresso cruza o início da janela i−1 (os
+dois primeiros vídeos também são pré-aquecidos em `requestIdleCallback`).
+
+**Governador de velocidade (v3):** `scrub: N` do GSAP suaviza por uma DURAÇÃO fixa, não
+por velocidade — um salto grande no scroll (scrollbar arrastada, tecla End, ou um fling
+que escapa do damping de touch) percorre a mesma distância maior na MESMA duração, ou
+seja, proporcionalmente mais rápido, podendo varrer várias janelas antes dos vídeos
+carregarem e pular estágios inteiros. Por isso `AssemblySequence` e `OrbitSection` não
+usam `scrub` — cada um cria um `ScrollTrigger` simples (só pin + progresso bruto) e
+avança a própria timeline manualmente (`tl.progress()`) a partir de um valor "governado":
+suavizado por LERP para scroll normal, mas com um TETO DE VELOCIDADE real (não por-tick,
+por segundo — escalado por `gsap.ticker.deltaRatio(60)` para não depender da taxa de
+quadros) que garante um tempo mínimo de permanência em cada janela, não importa o quão
+rápido ou por qual meio o scroll mudou. Quando a seção sai do range ativo do pin, o
+progresso "encaixa" (snap) direto no valor final — sem isso, ela travaria congelada numa
+transição pela metade se o usuário voltasse a rolar para dentro dela.
+`gsap.config({ autoSleep: 0 })` (em `useScrollGovernor`) evita que o ticker do GSAP entre
+em modo de baixa frequência por não haver tweens "tocando" no sentido tradicional.
+Camada complementar: `ScrollTrigger.normalizeScroll` amortece a inércia de touch/wheel
+(não cobre scrollbar/teclado — por isso o teto de velocidade acima é a garantia real).
 
 | Janela | Trecho    | Vídeo (conteúdo)                                                    | Fallback abaixo                           |
 | ------ | --------- | ------------------------------------------------------------------- | ----------------------------------------- |
