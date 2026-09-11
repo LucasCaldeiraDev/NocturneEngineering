@@ -36,31 +36,34 @@ export default function HeroFinale({ reduced }: { reduced: boolean }) {
       ref={sectionRef}
       id="finale"
       aria-label="Nocturne GT-1 — engineered to be desired"
-      className="relative flex min-h-svh items-end overflow-hidden"
+      className="relative flex min-h-svh flex-col overflow-hidden md:flex-row md:items-end"
     >
-      <picture>
-        <source media="(max-width: 767px)" srcSet={hero.imgMobile} />
-        <img
-          src={hero.img}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover object-[62%_50%] md:object-center"
-          loading="lazy"
-        />
-      </picture>
-      {FINISHES.slice(1).map((f, i) => (
-        <img
-          key={f.id}
-          src={variantsReady ? f.img : undefined}
-          alt=""
-          aria-hidden
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover object-[62%_50%] transition-opacity duration-700 md:object-center"
-          style={{ opacity: finish === i + 1 ? 1 : 0 }}
-        />
-      ))}
-      <div aria-hidden className="copy-scrim absolute inset-x-0 bottom-0 h-96" />
-      <div className="relative z-10 w-full px-6 pb-16 md:px-14 md:pb-24">
+      {/* Mobile: 4:3 media box in flow, copy below. Desktop: full-bleed. */}
+      <div className="stage-box relative w-full aspect-[4/3] md:absolute md:inset-0 md:aspect-auto">
+        <picture>
+          <source media="(max-width: 767px)" srcSet={hero.imgMobile} />
+          <img
+            src={hero.img}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover object-[52%_50%] md:object-center"
+            loading="lazy"
+          />
+        </picture>
+        {FINISHES.slice(1).map((f, i) => (
+          <img
+            key={f.id}
+            src={variantsReady ? f.img : undefined}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover object-[52%_50%] transition-opacity duration-700 md:object-center"
+            style={{ opacity: finish === i + 1 ? 1 : 0 }}
+          />
+        ))}
+      </div>
+      <div aria-hidden className="copy-scrim absolute inset-x-0 bottom-0 hidden h-96 md:block" />
+      <div className="relative z-10 w-full px-6 pt-6 pb-16 md:px-14 md:pt-0 md:pb-24">
         <p data-reveal className="hud-label text-hud">
           The result
         </p>

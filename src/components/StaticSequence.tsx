@@ -16,7 +16,7 @@ export default function StaticSequence() {
             <img
               src={s.img}
               alt={s.alt}
-              className="h-[70svh] w-full object-cover object-[62%_50%] md:object-center"
+              className="aspect-[4/3] w-full object-cover object-[52%_50%] md:aspect-auto md:h-[70svh] md:object-center"
               loading="lazy"
             />
           </picture>

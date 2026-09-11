@@ -45,10 +45,17 @@ Full-bleed vídeo; caption mono centrada na base: "TAKE THE WALK". Sem outra UI.
 
 ## Mobile (≤768px)
 
-- Palco idêntico, crop `cover` central (carro centralizado aguenta 9:16).
-- Copy block ancorado na base, largura total, headline menor.
-- Rail de progresso vira barra fina no topo. "01/06" permanece.
-- HUD extra oculto. Pin ~450vh. Órbita ~180vh, vídeo 720p.
+- **Não é full-bleed.** Os assets são 16:9; cobrir um viewport 9:19 mostraria só ~25% da
+  largura (carro "com zoom"). O palco vira uma **caixa 4:3 na largura total** (`.stage-box`,
+  `object-position: 52% 50%`) — mostra o carro inteiro — com máscara em gradiente no topo e
+  na base para fundir o skylight/piso no fundo `#060607`.
+- Copy block **abaixo** da caixa (não sobreposto), largura total, headline menor.
+- Intro: wordmark e cue centrados no espaço abaixo da caixa.
+- Mesmo tratamento na órbita (caption abaixo), no finale (caixa em fluxo, copy + configurador
+  abaixo) e na versão estática.
+- Rail de progresso oculto; "01/06" permanece. Pin ~500vh. Órbita ~180vh, vídeos 960w.
+- Ideal futuro (se houver créditos Higgsfield): outpaint 9:16 dos 8 stills (2 cr cada) e
+  voltar ao full-bleed no mobile; reframe dos vídeos custa 30–57 cr cada.
 
 ## Reduced motion
 

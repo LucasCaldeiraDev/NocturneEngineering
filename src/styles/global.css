@@ -95,6 +95,16 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
 }
 
+/* Mobile stage box: blend the 4:3 media band into the page background so
+   the frame's bright skylight (top) and grey floor (bottom) don't end in a
+   hard edge against #060607. */
+@media (max-width: 767px) {
+  .stage-box {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  }
+}
+
 /* Stage vignette */
 .vignette::after {
   content: '';

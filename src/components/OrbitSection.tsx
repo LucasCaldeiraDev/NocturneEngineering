@@ -116,14 +116,14 @@ export default function OrbitSection({ reduced }: { reduced: boolean }) {
   if (reduced || failed) {
     return (
       <section aria-label="Walk-around">
-        <figure className="relative h-svh">
+        <figure className="relative md:h-svh">
           <img
             src={ORBIT.poster}
             alt="The finished Nocturne GT-1 standing in the dark studio"
-            className="h-full w-full object-cover"
+            className="aspect-[4/3] w-full object-cover object-[52%_50%] md:aspect-auto md:h-full md:object-center"
             loading="lazy"
           />
-          <figcaption className="hud-label text-ink/80 absolute bottom-10 w-full text-center">
+          <figcaption className="hud-label text-ink/80 w-full px-6 py-8 text-center md:absolute md:bottom-10 md:px-0 md:py-0">
             Take the walk — every angle was an argument.
           </figcaption>
         </figure>
@@ -137,20 +137,22 @@ export default function OrbitSection({ reduced }: { reduced: boolean }) {
       aria-label="Walk-around"
       className="bg-bg relative h-svh overflow-hidden"
     >
-      <video
-        ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
-        muted
-        playsInline
-        preload="none"
-        poster={ORBIT.poster}
-        aria-label="Slow camera orbit around the finished Nocturne GT-1"
-        onError={() => setFailed(true)}
-        tabIndex={-1}
-      />
+      <div className="stage-box absolute inset-x-0 top-14 aspect-[4/3] md:inset-0 md:top-0 md:aspect-auto">
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover object-[52%_50%] md:object-center"
+          muted
+          playsInline
+          preload="none"
+          poster={ORBIT.poster}
+          aria-label="Slow camera orbit around the finished Nocturne GT-1"
+          onError={() => setFailed(true)}
+          tabIndex={-1}
+        />
+      </div>
       <p
         ref={captionRef}
-        className="hud-label text-ink/80 absolute bottom-12 w-full text-center"
+        className="hud-label text-ink/80 absolute top-[calc(3.5rem+75vw+2.5rem)] w-full px-6 text-center md:top-auto md:bottom-12 md:px-0"
         style={{ visibility: 'hidden' }}
       >
         Take the walk — every angle was an argument.

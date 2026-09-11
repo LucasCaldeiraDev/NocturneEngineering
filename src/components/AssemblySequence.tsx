@@ -314,7 +314,16 @@ export default function AssemblySequence() {
       aria-label="Build sequence"
       className="bg-bg relative h-svh overflow-hidden"
     >
-      <div ref={stackRef} className="vignette absolute inset-0">
+      {/*
+        Mobile: a full-width 4:3 stage box instead of full-bleed cover. The
+        frames are 16:9, so covering a portrait viewport would show only ~25%
+        of their width (the car looked "zoomed in"). A 4:3 box keeps the whole
+        car in frame; the copy moves below it instead of overlaying.
+      */}
+      <div
+        ref={stackRef}
+        className="vignette stage-box absolute inset-x-0 top-14 aspect-[4/3] md:inset-0 md:top-0 md:aspect-auto"
+      >
         {STAGES.map((s, i) => (
           <div
             key={s.id}
@@ -332,7 +341,7 @@ export default function AssemblySequence() {
                 }}
                 src={s.img}
                 alt={s.alt}
-                className="absolute inset-0 h-full w-full object-cover object-[62%_50%] md:object-center"
+                className="absolute inset-0 h-full w-full object-cover object-[52%_50%] md:object-center"
                 style={{ willChange: 'transform' }}
                 fetchPriority={i === 0 ? 'high' : 'low'}
                 draggable={false}
@@ -348,7 +357,7 @@ export default function AssemblySequence() {
             ref={(el) => {
               videoRefs.current[i] = el
             }}
-            className="absolute inset-0 h-full w-full object-cover object-[62%_50%] md:object-center"
+            className="absolute inset-0 h-full w-full object-cover object-[52%_50%] md:object-center"
             muted
             playsInline
             preload="none"
@@ -374,7 +383,7 @@ export default function AssemblySequence() {
 
       <div ref={flashRef} aria-hidden className="absolute inset-0 bg-white" />
 
-      <div aria-hidden className="copy-scrim absolute inset-x-0 bottom-0 h-72" />
+      <div aria-hidden className="copy-scrim absolute inset-x-0 bottom-0 hidden h-72 md:block" />
 
       {/* HUD chrome */}
       <div className="hud-label text-ink/80 hud-chrome absolute top-6 left-6 md:left-10">
@@ -412,7 +421,7 @@ export default function AssemblySequence() {
           ref={(el) => {
             copyRefs.current[i] = el
           }}
-          className="absolute bottom-14 left-6 max-w-md pr-6 md:bottom-20 md:left-14"
+          className="absolute top-[calc(3.5rem+75vw+1.75rem)] right-6 left-6 md:top-auto md:right-auto md:bottom-20 md:left-14 md:max-w-md md:pr-6"
           style={{ visibility: 'hidden' }}
         >
           <p className="hud-label text-hud">
@@ -425,11 +434,14 @@ export default function AssemblySequence() {
       ))}
 
       {/* Intro overlay */}
-      <div ref={introRef} className="absolute inset-0 flex flex-col items-center justify-center">
+      <div
+        ref={introRef}
+        className="absolute inset-x-0 top-[calc(3.5rem+75vw)] bottom-0 flex flex-col items-center justify-center md:inset-0"
+      >
         <p className="hud-label text-hud hud-chrome">Nocturne Automotive</p>
         <p className="display hud-chrome mt-10 text-[13vw] leading-none md:text-[9vw]">Nocturne</p>
         <p className="hud-label hud-chrome text-ink/70 mt-10">Concept GT-1</p>
-        <div className="absolute bottom-10 flex flex-col items-center gap-3">
+        <div className="mt-14 flex flex-col items-center gap-3 md:absolute md:bottom-10 md:mt-0">
           <p className="hud-label text-ink/70">Scroll to build</p>
           <span className="cue-line" aria-hidden />
         </div>
